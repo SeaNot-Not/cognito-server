@@ -37,14 +37,14 @@ export class AuthService {
     const user = await this.userModel.findOne({ email, deletedAt: null });
     if (!user) throw new UnauthorizedException(loginErrorMessage);
 
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) throw new UnauthorizedException(loginErrorMessage);
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) throw new UnauthorizedException(loginErrorMessage);
 
     const token = this.jwtService.sign({ userId: user._id });
 
     // Remove Password
-    const { password: _, ...userWithoutPassword } = user.toObject();
+    const { password: _, ...userDataWithoutPassword } = user.toObject();
 
-    return { token, user: userWithoutPassword };
+    return { token, user: userDataWithoutPassword };
   }
 }

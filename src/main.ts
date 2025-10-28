@@ -4,7 +4,7 @@ import { Logger } from "nestjs-pino";
 // import { Logger } from "@nestjs/common";
 import { ZodValidationPipe } from "nestjs-zod";
 import cookieParser from "cookie-parser";
-import configuration from "./config/configuration";
+import configuration from "./config/env.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
