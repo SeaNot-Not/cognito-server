@@ -4,6 +4,7 @@ import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import type { Response } from "express";
 import { ConfigService } from "@nestjs/config";
+import { Public } from "src/common/decorators/public.decorator";
 
 @Controller("api/auth")
 export class AuthController {
@@ -12,16 +13,18 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
-  // @POST - public - /api/auth/register
+  // @POST - @PUBLIC - /api/auth/register
+  @Public()
   @Post("signup")
   async signup(@Body() dto: SignupDto) {
     return this.authService.signup(dto);
   }
 
-  // @POST - public - /api/auth/login
+  // @POST - @PUBLIC - /api/auth/login
+  @Public()
   @Post("login")
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const { token, user } = await this.authService.login(dto);
+    const { token } = await this.authService.login(dto);
 
     // Generate Cookie
     const nodeEnv = this.configService.get<string>("nodeEnv");
@@ -32,10 +35,11 @@ export class AuthController {
       maxAge: 60_000 * 60 * 24 * 60, // 60 days
     });
 
-    return { data: user, message: "Login successful." };
+    return { message: "Login successful." };
   }
 
-  // @POST - public - /api/auth/logout
+  // @POST - @PUBLIC - /api/auth/logout
+  @Public()
   @Post("logout")
   async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("cognito-access-token");
