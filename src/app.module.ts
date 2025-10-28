@@ -7,6 +7,7 @@ import { LoggerConfig } from "./config/logger.config";
 import { UserModule } from "./user/user.module";
 import { APP_GUARD } from "@nestjs/core";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
+import joiConfig from "./config/joi.config";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
     ConfigModule.forRoot({
       load: [envConfig],
       isGlobal: true,
+      validationSchema: joiConfig,
     }),
 
     // Mongoose Module for MongoDB Connection
