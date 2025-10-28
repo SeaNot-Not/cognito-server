@@ -1,7 +1,7 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 
-const signupSchema = z.object({
+export const signupSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email format"),
 
   password: z

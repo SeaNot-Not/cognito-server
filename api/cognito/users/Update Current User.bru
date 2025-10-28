@@ -1,0 +1,17 @@
+meta {
+  name: Update Current User
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{url}}/me
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Pedro"
+  }
+}

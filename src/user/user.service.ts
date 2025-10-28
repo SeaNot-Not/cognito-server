@@ -1,7 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { User } from "./schemas/user.schema";
 import { Model } from "mongoose";
+import type { UpdateUserDtoType } from "./dto/update-user.dto";
 
 @Injectable()
 export class UserService {
@@ -11,17 +12,51 @@ export class UserService {
     return this.userModel;
   }
 
+  // Find one user by email
   async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email, deletedAt: null });
+    return this.userModel.findOne({ email, deletedAt: { $in: [null, undefined] } }).exec();
   }
 
+  // Check if a user exists by email
   async existsByEmail(email: string): Promise<boolean> {
-    const user = await this.userModel.exists({ email, deletedAt: null });
+    const user = await this.userModel
+      .exists({ email, deletedAt: { $in: [null, undefined] } })
+      .exec();
     return !!user;
   }
 
+  // Create new user
   async create(userData: Partial<User>): Promise<User> {
     const user = new this.userModel(userData);
     return user.save();
+  }
+
+  // Get user by ID (exclude password)
+  async getUserById(id: string): Promise<User | null> {
+    return this.userModel
+      .findOne({ _id: id, deletedAt: { $in: [null, undefined] } })
+      .select("-password")
+      .exec();
+  }
+
+  // Update user by ID
+  async update(userId: string, dto: UpdateUserDtoType): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(userId, dto, { new: true }).exec();
+  }
+
+  // Discover users for swiping (exclude self, likes, skips)
+  async discover(currentUser: Partial<User>): Promise<User[]> {
+    const excludedIds = [
+      currentUser._id,
+      ...(currentUser.likes || []),
+      ...(currentUser.skips || []),
+    ];
+
+    return this.userModel
+      .find({
+        _id: { $nin: excludedIds },
+        deletedAt: { $in: [null, undefined] },
+      })
+      .exec();
   }
 }
