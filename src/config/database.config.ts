@@ -2,7 +2,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { LoggerModule, PinoLogger } from "nestjs-pino";
 
-export const MongooseConfig = MongooseModule.forRootAsync({
+export const MongooseModuleConfig = MongooseModule.forRootAsync({
   imports: [ConfigModule, LoggerModule],
   useFactory: async (configService: ConfigService, logger: PinoLogger) => {
     logger.setContext("MongoDB");

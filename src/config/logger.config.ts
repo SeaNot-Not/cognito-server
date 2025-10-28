@@ -1,7 +1,7 @@
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { LoggerModule } from "nestjs-pino";
 
-export const LoggerConfig = LoggerModule.forRootAsync({
+export const LoggerModuleConfig = LoggerModule.forRootAsync({
   imports: [ConfigModule],
   useFactory: async (configService: ConfigService) => {
     const nodeEnv = configService.get<string>("nodeEnv");

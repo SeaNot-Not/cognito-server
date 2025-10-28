@@ -59,4 +59,35 @@ export class UserService {
       })
       .exec();
   }
+
+  // Add a liked user to current user's likes array
+  async addLike(userId: string, likedUserId: string): Promise<User> {
+    const user = await this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { $addToSet: { likes: likedUserId } }, // $addToSet to avoid duplicates
+        { new: true },
+      )
+      .exec();
+
+    if (!user) throw new NotFoundException("User not found.");
+    return user;
+  }
+
+  // Add a skipped user to current user's skips array
+  async addSkip(userId: string, skippedUserId: string): Promise<User> {
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { $addToSet: { skips: skippedUserId } }, { new: true })
+      .exec(); // $addToSet to avoid duplicates
+
+    if (!user) throw new NotFoundException("User not found.");
+    return user;
+  }
+
+  // Check if a user has liked another user
+  async hasLiked(userId: string, targetUserId: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ _id: userId, likes: targetUserId }).exec();
+
+    return !!user;
+  }
 }
