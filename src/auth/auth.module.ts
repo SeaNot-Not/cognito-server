@@ -1,26 +1,12 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { JwtModule } from "@nestjs/jwt";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { User, UserSchema } from "./schemas/user.schema";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { loginJwtConfig } from "src/config/jwt.config";
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>("jwtSecret"),
-        signOptions: {
-          expiresIn: "60d",
-        },
-      }),
-      inject: [ConfigService],
-    }),
-  ],
+  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), loginJwtConfig],
 
   controllers: [AuthController],
   providers: [AuthService],
