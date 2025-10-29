@@ -1,6 +1,6 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { signupSchema } from "src/auth/dto/signup.dto";
+import { signupSchema } from "src/modules/auth/dto/signup.dto";
 
 const updateUserSchema = signupSchema
   .pick({

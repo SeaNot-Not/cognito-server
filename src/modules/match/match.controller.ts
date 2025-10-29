@@ -1,6 +1,7 @@
 import { Controller, Post, Param, Get } from "@nestjs/common";
 import { MatchService } from "./match.service";
 import { GetCurrentUser } from "src/common/decorators/get-current-user.decorator";
+import { ResponseHelper } from "src/common/helpers/response.helper";
 
 @Controller("api/matches")
 export class MatchController {
@@ -11,11 +12,10 @@ export class MatchController {
   async likeUser(@GetCurrentUser("_id") userId: string, @Param("targetId") targetId: string) {
     const result = await this.matchService.likeUser(userId, targetId);
 
-    return {
-      data: result,
-      message: `User liked ${result.newMatch ? "and matched" : "successfully"}.`,
-      statusCode: 200,
-    };
+    return ResponseHelper.success(
+      result,
+      `User liked ${result.newMatch ? "and matched" : "successfully"}.`,
+    );
   }
 
   // @POST - private - /api/matches/skip
@@ -23,11 +23,7 @@ export class MatchController {
   async skipUser(@GetCurrentUser("_id") userId: string, @Param("targetId") targetId: string) {
     const result = await this.matchService.skipUser(userId, targetId);
 
-    return {
-      data: result,
-      message: "User skipped successfully.",
-      statusCode: 200,
-    };
+    return ResponseHelper.success(result, "User skipped successfully.");
   }
 
   // @GET - private - /api/matches
@@ -35,10 +31,6 @@ export class MatchController {
   async getUserMatches(@GetCurrentUser("_id") userId: string) {
     const result = await this.matchService.getUserMatches(userId);
 
-    return {
-      data: result,
-      message: "User matches fetched successfully.",
-      statusCode: 200,
-    };
+    return ResponseHelper.success(result, "User matches fetched successfully.");
   }
 }

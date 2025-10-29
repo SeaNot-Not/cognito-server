@@ -48,20 +48,55 @@ export class UserService {
    ** Swipe Feature Service Methods **
    */
 
-  // Discover users, for swiping feature (exclude self, likes, skips)
-  async discover(currentUser: Partial<UserDocument>): Promise<UserDocument[]> {
+  /**
+   * Discover users for swiping feature (exclude self, likes, skips)
+   * Uses cursor-based pagination for infinite scroll/batch loading
+   */
+  async discover(currentUser: Partial<UserDocument>, cursor?: string, limit: number = 10) {
     const excludedIds = [
       currentUser._id,
       ...(currentUser.likes || []),
       ...(currentUser.skips || []),
     ];
 
-    return this.userModel
-      .find({
-        _id: { $nin: excludedIds },
-        deletedAt: { $in: [null, undefined] },
-      })
+    // Build query
+    const query: any = {
+      _id: { $nin: excludedIds },
+      deletedAt: { $in: [null, undefined] },
+    };
+
+    // If cursor exists, get users after that cursor
+    if (cursor) {
+      query._id = {
+        ...query._id,
+        $gt: new Types.ObjectId(cursor),
+      };
+    }
+
+    // Fetch limit + 1 to check if there are more users
+    // Note: If there is time, implement more advanced sorting
+    const users = await this.userModel
+      .find(query)
+      .sort({ age: 1 }) // Order by ID for now
+      .limit(limit + 1)
+      .select("name age bio profilePicture")
       .exec();
+
+    // Check if there are more users
+    const hasMore = users.length > limit;
+
+    // Remove the extra user if exists
+    const items = hasMore ? users.slice(0, limit) : users;
+
+    // Order by ID for now
+    // Get next cursor (last user's ID)
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1]._id.toString() : null;
+
+    return {
+      users: items,
+      hasMore,
+      nextCursor,
+    };
   }
 
   // Add a liked user to current user's likes array

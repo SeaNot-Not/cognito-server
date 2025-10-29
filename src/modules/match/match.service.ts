@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Match } from "./schemas/match.schema";
-import { UserService } from "src/user/user.service";
+import { UserService } from "src/modules/user/user.service";
 import { validateObjectId } from "src/common/utils/validate-object-id";
 
 @Injectable()

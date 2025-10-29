@@ -5,6 +5,7 @@ import { LoginDto } from "./dto/login.dto";
 import type { Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { Public } from "src/common/decorators/public.decorator";
+import { ResponseHelper } from "src/common/helpers/response.helper";
 
 @Controller("api/auth")
 export class AuthController {
@@ -13,14 +14,16 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
-  // @POST - @PUBLIC - /api/auth/register
+  // @POST - public - /api/auth/register
   @Public()
   @Post("signup")
   async signup(@Body() dto: SignupDto) {
-    return this.authService.signup(dto);
+    const user = await this.authService.signup(dto);
+
+    return ResponseHelper.created(user, "User signed up successfully.");
   }
 
-  // @POST - @PUBLIC - /api/auth/login
+  // @POST - public - /api/auth/login
   @Public()
   @Post("login")
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
@@ -35,14 +38,14 @@ export class AuthController {
       maxAge: 60_000 * 60 * 24 * 60, // 60 days
     });
 
-    return { message: "Login successful.", statusCode: 200 };
+    return ResponseHelper.noContent("Login successful.");
   }
 
-  // @POST - @PUBLIC - /api/auth/logout
+  // @POST - public - /api/auth/logout
   @Public()
   @Post("logout")
   async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("cognito-access-token");
-    return { message: "Logout successful.", statusCode: 200 };
+    return ResponseHelper.noContent("Logout successful.");
   }
 }

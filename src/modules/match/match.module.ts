@@ -3,7 +3,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { Match, MatchSchema } from "./schemas/match.schema";
 import { MatchService } from "./match.service";
 import { MatchController } from "./match.controller";
-import { UserModule } from "src/user/user.module";
+import { UserModule } from "src/modules/user/user.module";
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Match.name, schema: MatchSchema }]), UserModule],

@@ -1,10 +1,9 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { Logger } from "nestjs-pino";
-// import { Logger } from "@nestjs/common";
-import { ZodValidationPipe } from "nestjs-zod";
 import cookieParser from "cookie-parser";
 import configuration from "./config/env.config";
+import { CustomIoAdapter } from "./config/socket.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -20,16 +19,18 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Web Socket Adapter
+  app.useWebSocketAdapter(new CustomIoAdapter(app));
+
   // Access Configured Pino Logger in the App Module
   const logger = app.get(Logger);
   app.useLogger(logger);
 
-  // For activating Zod Validation
-  app.useGlobalPipes(new ZodValidationPipe());
-
   await app.listen(port);
 
+  // Logs
   logger.log(`Application is running on: http://localhost:${port}`);
+  logger.log(`CORS enabled for: ${clientUrl}`);
   logger.log(`Environment: ${nodeEnv || "development"}`);
 }
 bootstrap();
