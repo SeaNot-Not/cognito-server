@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { User } from "./schemas/user.schema";
-import { Model } from "mongoose";
+import { User, UserDocument } from "./schemas/user.schema";
+import { Model, Types } from "mongoose";
 import type { UpdateUserDtoType } from "./dto/update-user.dto";
 
 @Injectable()
@@ -13,7 +13,7 @@ export class UserService {
   }
 
   // Find one user by email
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email, deletedAt: { $in: [null, undefined] } }).exec();
   }
 
@@ -26,7 +26,7 @@ export class UserService {
   }
 
   // Create new user
-  async create(userData: Partial<User>): Promise<User> {
+  async create(userData: Partial<UserDocument>): Promise<UserDocument> {
     const user = new this.userModel(userData);
     return user.save();
   }
@@ -40,12 +40,16 @@ export class UserService {
   }
 
   // Update user by ID
-  async update(userId: string, dto: UpdateUserDtoType): Promise<User | null> {
+  async update(userId: string, dto: UpdateUserDtoType): Promise<UserDocument | null> {
     return this.userModel.findByIdAndUpdate(userId, dto, { new: true }).exec();
   }
 
-  // Discover users for swiping (exclude self, likes, skips)
-  async discover(currentUser: Partial<User>): Promise<User[]> {
+  /*
+   ** Swipe Feature Service Methods **
+   */
+
+  // Discover users, for swiping feature (exclude self, likes, skips)
+  async discover(currentUser: Partial<UserDocument>): Promise<UserDocument[]> {
     const excludedIds = [
       currentUser._id,
       ...(currentUser.likes || []),
@@ -61,32 +65,31 @@ export class UserService {
   }
 
   // Add a liked user to current user's likes array
-  async addLike(userId: string, likedUserId: string): Promise<User> {
-    const user = await this.userModel
+  async addLike(userId: string, likedUserId: string): Promise<UserDocument | null> {
+    return this.userModel
       .findByIdAndUpdate(
         userId,
         { $addToSet: { likes: likedUserId } }, // $addToSet to avoid duplicates
         { new: true },
       )
       .exec();
-
-    if (!user) throw new NotFoundException("User not found.");
-    return user;
   }
 
   // Add a skipped user to current user's skips array
-  async addSkip(userId: string, skippedUserId: string): Promise<User> {
-    const user = await this.userModel
+  async addSkip(userId: string, skippedUserId: string): Promise<UserDocument | null> {
+    return this.userModel
       .findByIdAndUpdate(userId, { $addToSet: { skips: skippedUserId } }, { new: true })
-      .exec(); // $addToSet to avoid duplicates
-
-    if (!user) throw new NotFoundException("User not found.");
-    return user;
+      .exec();
   }
 
   // Check if a user has liked another user
-  async hasLiked(userId: string, targetUserId: string): Promise<boolean> {
-    const user = await this.userModel.findOne({ _id: userId, likes: targetUserId }).exec();
+  async isLikedByTheTargetUser(userId: string, targetUserId: string): Promise<boolean> {
+    const user = await this.userModel
+      .findOne({
+        _id: userId,
+        likes: targetUserId,
+      })
+      .exec();
 
     return !!user;
   }

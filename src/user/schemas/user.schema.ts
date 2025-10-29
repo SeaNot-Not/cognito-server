@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types as MongooseTypes } from "mongoose";
+import { HydratedDocument, Types as MongooseTypes } from "mongoose";
+
+export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
-export class User extends Document {
+export class User {
   // Authentication
   @Prop({ required: true, unique: true })
   email: string;
@@ -25,11 +27,11 @@ export class User extends Document {
 
   // Likes
   @Prop({ type: [MongooseTypes.ObjectId], ref: User.name, default: [] })
-  likes: User[];
+  likes: MongooseTypes.ObjectId[];
 
   // Skips
   @Prop({ type: [MongooseTypes.ObjectId], ref: User.name, default: [] })
-  skips: User[];
+  skips: MongooseTypes.ObjectId[];
 
   // Soft Delete
   @Prop({ default: null })

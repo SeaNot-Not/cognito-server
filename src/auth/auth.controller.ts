@@ -35,7 +35,7 @@ export class AuthController {
       maxAge: 60_000 * 60 * 24 * 60, // 60 days
     });
 
-    return { message: "Login successful." };
+    return { message: "Login successful.", statusCode: 200 };
   }
 
   // @POST - @PUBLIC - /api/auth/logout
@@ -43,6 +43,6 @@ export class AuthController {
   @Post("logout")
   async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("cognito-access-token");
-    return { message: "Logout successful." };
+    return { message: "Logout successful.", statusCode: 200 };
   }
 }

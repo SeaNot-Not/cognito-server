@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { User } from "../user/schemas/user.schema";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { UserService } from "src/user/user.service";
@@ -14,7 +13,7 @@ export class AuthService {
   ) {}
 
   // @POST - public - /api/auth/register
-  async signup(dto: SignupDto): Promise<{ message: string }> {
+  async signup(dto: SignupDto): Promise<{ message: string; statusCode: number }> {
     const { email, password } = dto;
 
     const isEmailExist = await this.userService.existsByEmail(email);
@@ -24,7 +23,7 @@ export class AuthService {
 
     await this.userService.create({ ...dto, password: hashedPassword });
 
-    return { message: "Registration successful." };
+    return { statusCode: 201, message: "Registration successful." };
   }
 
   // @POST - public - /api/auth/login

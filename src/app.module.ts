@@ -9,6 +9,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import joiConfig from "./config/joi.config";
 import { MatchModule } from "./match/match.module";
+import { MessageModule } from "./message/message.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MatchModule } from "./match/match.module";
     AuthModule,
     UserModule,
     MatchModule,
+    // MessageModule,
   ],
 
   providers: [

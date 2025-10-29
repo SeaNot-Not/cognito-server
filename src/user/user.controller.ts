@@ -1,6 +1,6 @@
 import { Body, Controller, Get, NotFoundException, Param, Patch } from "@nestjs/common";
 import { GetCurrentUser } from "src/common/decorators/get-current-user.decorator";
-import { User } from "./schemas/user.schema";
+import type { UserDocument } from "./schemas/user.schema";
 import { UserService } from "./user.service";
 import { validateObjectId } from "src/common/utils/validate-object-id";
 import type { UpdateUserDtoType } from "./dto/update-user.dto";
@@ -11,15 +11,15 @@ export class UserController {
 
   // @GET - private - /api/users/me
   @Get("me")
-  async me(@GetCurrentUser() user: User) {
-    return { message: "Current user retrieved.", data: user };
+  async me(@GetCurrentUser() user: UserDocument) {
+    return { data: user, message: "Current user retrieved.", statusCode: 200 };
   }
 
-  // @GET - @PRIVATE - /api/users/discover
+  // @GET - private - /api/users/discover
   @Get("discover")
-  async discover(@GetCurrentUser() user: User) {
+  async discover(@GetCurrentUser() user: UserDocument) {
     const users = await this.userService.discover(user);
-    return { message: "Discover users retrieved.", data: users };
+    return { data: users, message: "Discover users retrieved.", statusCode: 200 };
   }
 
   // @GET - private - /api/users/:id
@@ -31,7 +31,7 @@ export class UserController {
 
     if (!user) throw new NotFoundException("User not found.");
 
-    return { message: "User found.", data: user };
+    return { data: user, message: "User found.", statusCode: 200 };
   }
 
   // @PATCH - @PRIVATE - /api/users/me
@@ -43,6 +43,6 @@ export class UserController {
 
     if (!user) throw new NotFoundException("User not found.");
 
-    return { message: "User updated.", data: user };
+    return { data: user, message: "User updated.", statusCode: 200 };
   }
 }

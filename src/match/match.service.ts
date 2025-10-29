@@ -1,8 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Match } from "./schemas/match.schema";
 import { UserService } from "src/user/user.service";
+import { validateObjectId } from "src/common/utils/validate-object-id";
 
 @Injectable()
 export class MatchService {
@@ -11,27 +12,54 @@ export class MatchService {
     private userService: UserService,
   ) {}
 
+  // Get Match by ID
+  async getMatchById(id: string): Promise<Match | null> {
+    return this.matchModel.findById(id).exec();
+  }
+
+  // Get all matches for a user
+  async getUserMatches(userId: string) {
+    return this.matchModel
+      .find({
+        unmatched: false,
+        $or: [{ userA: userId }, { userB: userId }],
+        deletedAt: null,
+      })
+      .populate("userA userB", "name age bio profilePicture")
+      .exec();
+  }
+
   // Like a user and check for mutual like
   async likeUser(currentUserId: string, targetUserId: string) {
-    // Step 1: Add to current user's likes
-    await this.userService.addLike(currentUserId, targetUserId);
+    validateObjectId(currentUserId, "User ID");
+    validateObjectId(targetUserId, "User ID");
 
-    // Step 2: Check if target user liked back
-    const isMutual = await this.userService.hasLiked(targetUserId, currentUserId);
+    // Check if ids are the same
+    if (currentUserId === targetUserId) throw new BadRequestException("Cannot like yourself.");
 
-    if (isMutual) {
-      // Step 3: Create match if not already exists
+    // Add like to current user
+    const user = await this.userService.addLike(currentUserId, targetUserId);
+    if (!user) throw new NotFoundException("User not found.");
+
+    // Check if the current user is in the target user's likes array
+    const isMutualInLikes = await this.userService.isLikedByTheTargetUser(
+      targetUserId,
+      currentUserId,
+    );
+
+    if (isMutualInLikes) {
       const existingMatch = await this.matchModel.findOne({
         $or: [
-          { user1: currentUserId, user2: targetUserId },
-          { user1: targetUserId, user2: currentUserId },
+          { userA: currentUserId, userB: targetUserId },
+          { userA: targetUserId, userB: currentUserId },
         ],
       });
 
+      // Create new match if no existing match
       if (!existingMatch) {
         const match = await this.matchModel.create({
-          user1: currentUserId,
-          user2: targetUserId,
+          userA: currentUserId,
+          userB: targetUserId,
         });
 
         // (optional) emit socket event later
@@ -41,23 +69,21 @@ export class MatchService {
       return { match: existingMatch, newMatch: false };
     }
 
-    return { newMatch: false };
+    return { match: null, newMatch: false };
   }
 
   // Skip a user
   async skipUser(currentUserId: string, targetUserId: string) {
-    await this.userService.addSkip(currentUserId, targetUserId);
-    return { skipped: true };
-  }
+    validateObjectId(currentUserId, "User ID");
+    validateObjectId(targetUserId, "User ID");
 
-  // Get all matches for a user
-  async getUserMatches(userId: string) {
-    return this.matchModel
-      .find({
-        unmatched: false,
-        $or: [{ user1: userId }, { user2: userId }],
-      })
-      .populate(["user1", "user2"], "name age bio profilePicture")
-      .exec();
+    // Check if ids are the same
+    if (currentUserId === targetUserId) throw new BadRequestException("Cannot skip yourself.");
+
+    const user = await this.userService.addSkip(currentUserId, targetUserId);
+
+    if (!user) throw new NotFoundException("User not found.");
+
+    return { skipped: true };
   }
 }
