@@ -14,8 +14,8 @@ export interface OffsetPaginationMeta {
 
 export interface CursorPaginationMeta {
   hasMore: boolean;
-  nextCursor: string | null;
-  prevCursor?: string | null;
+  nextCursor: string | Date | null;
+  prevCursor?: string | Date | null;
 }
 
 export interface SocketResponse<T = any> {

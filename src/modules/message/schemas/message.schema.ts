@@ -16,6 +16,10 @@ export class Message {
   @Prop({ type: String, required: true })
   text: string;
 
+  // Timestamps for errors in cursor pagination
+  createdAt: Date;
+  updatedAt: Date;
+
   // Soft delete
   @Prop({ default: null })
   deletedAt?: Date;

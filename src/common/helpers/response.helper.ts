@@ -77,8 +77,8 @@ export class ResponseHelper {
   static cursorPaginated<T>(
     items: T[],
     hasMore: boolean,
-    nextCursor: string | null,
-    prevCursor: string | null = null,
+    nextCursor: string | Date | null,
+    prevCursor: string | Date | null = null,
     message: string = "Data retrieved successfully",
   ): HttpResponse<{
     items: T[];
@@ -91,7 +91,7 @@ export class ResponseHelper {
         pagination: {
           hasMore,
           nextCursor,
-          ...(prevCursor && { prevCursor }),
+          prevCursor,
         },
       },
       message,

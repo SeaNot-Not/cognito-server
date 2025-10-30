@@ -18,7 +18,7 @@ export const signupSchema = z.object({
 
   age: z.number().int().min(18, "You must be 18 years old or older"),
 
-  bio: z.string().optional(),
+  bio: z.string().max(2000, "Bio must not exceed 2000 characters").trim().optional(),
 
   profileImage: z
     .string()

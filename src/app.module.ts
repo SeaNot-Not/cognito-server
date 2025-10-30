@@ -10,9 +10,9 @@ import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import joiConfig from "./config/joi.config";
 import { MatchModule } from "./modules/match/match.module";
 import { MessageModule } from "./modules/message/message.module";
-import { NotFoundController } from "./app.controller";
 import { GlobalExceptionFilter } from "./common/filters/global-exception.filter";
 import { ZodValidationPipe } from "nestjs-zod";
+import { NotFoundExceptionFilter } from "./common/filters/not-found.filter";
 
 @Module({
   imports: [
@@ -35,9 +35,6 @@ import { ZodValidationPipe } from "nestjs-zod";
     MessageModule,
   ],
 
-  // For Catching 404 Not Found Routes
-  controllers: [NotFoundController],
-
   providers: [
     // Global JWT Auth Guard
     {
@@ -48,6 +45,11 @@ import { ZodValidationPipe } from "nestjs-zod";
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    // Global Not Found Filter
+    {
+      provide: APP_FILTER,
+      useClass: NotFoundExceptionFilter,
     },
     // Global Zod Validation Pipe
     {

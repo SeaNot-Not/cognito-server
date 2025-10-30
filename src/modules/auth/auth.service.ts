@@ -14,7 +14,7 @@ export class AuthService {
   ) {}
 
   // @POST - public - /api/auth/register
-  async signup(dto: SignupDto): Promise<Partial<UserDocument>> {
+  async signup(dto: SignupDto): Promise<void> {
     const { email, password } = dto;
 
     const isEmailExist = await this.userService.existsByEmail(email);
@@ -24,15 +24,13 @@ export class AuthService {
 
     const user = await this.userService.create({ ...dto, password: hashedPassword });
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user.toObject();
-
-    return userWithoutPassword;
+    if (!user) throw new ConflictException("User registration failed.");
   }
 
   // @POST - public - /api/auth/login
-  async login(dto: LoginDto): Promise<{ token: string }> {
+  async login(dto: LoginDto): Promise<{ token: string; userData: Partial<UserDocument> }> {
     const { email, password } = dto;
+
     const loginErrorMessage = "Invalid email or password.";
 
     const user = await this.userService.findByEmail(email);
@@ -43,6 +41,9 @@ export class AuthService {
 
     const token = this.jwtService.sign({ userId: user._id });
 
-    return { token };
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user.toObject();
+
+    return { token, userData: userWithoutPassword };
   }
 }

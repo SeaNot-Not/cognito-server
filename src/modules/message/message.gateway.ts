@@ -29,7 +29,6 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   /*
    * Gateway Lifecycle Hooks
    */
-
   afterInit(server: Server) {
     this.logger.info("WebSocket Gateway initialized successfully");
   }

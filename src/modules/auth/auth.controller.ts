@@ -18,16 +18,16 @@ export class AuthController {
   @Public()
   @Post("signup")
   async signup(@Body() dto: SignupDto) {
-    const user = await this.authService.signup(dto);
+    await this.authService.signup(dto);
 
-    return ResponseHelper.created(user, "User signed up successfully.");
+    return ResponseHelper.noContent("User registered successfully.");
   }
 
   // @POST - public - /api/auth/login
   @Public()
   @Post("login")
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const { token } = await this.authService.login(dto);
+    const { token, userData } = await this.authService.login(dto);
 
     // Generate Cookie
     const nodeEnv = this.configService.get<string>("nodeEnv");
@@ -38,7 +38,7 @@ export class AuthController {
       maxAge: 60_000 * 60 * 24 * 60, // 60 days
     });
 
-    return ResponseHelper.noContent("Login successful.");
+    return ResponseHelper.success(userData, "User logged in successfully.");
   }
 
   // @POST - public - /api/auth/logout
@@ -46,6 +46,6 @@ export class AuthController {
   @Post("logout")
   async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("cognito-access-token");
-    return ResponseHelper.noContent("Logout successful.");
+    return ResponseHelper.noContent("User logged out successfully.");
   }
 }

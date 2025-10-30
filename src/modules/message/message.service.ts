@@ -26,49 +26,34 @@ export class MessageService {
    * Get messages with cursor-based pagination
    * Loads older messages when scrolling up
    */
-  async getMessages(matchId: string, cursor?: string, limit: number = 20) {
-    validateObjectId(matchId, "Match ID");
-
+  async getMessages(matchId: string, cursor?: Date, limit: number = 10) {
     // Build query
     const query: any = {
-      matchId: new Types.ObjectId(matchId),
+      matchId: matchId,
+      deletedAt: { $in: [null, undefined] },
     };
 
-    // If cursor exists, get messages before that cursor (older messages)
     if (cursor) {
-      validateObjectId(cursor, "Cursor");
-      const cursorMessage = await this.messageModel.findById(cursor).select("createdAt");
+      query.createdAt = { $lt: new Date(cursor) };
+    } // If cursor of last message fetched timestamp is provided, query comments created before that timestamp
 
-      if (cursorMessage) {
-        // Get messages older than cursor
-        query.createdAt = { $lt: cursorMessage };
-      }
-    }
-
-    // Fetch limit + 1 to check if there are more messages
     const messages = await this.messageModel
       .find(query)
       .populate("senderId", "name profilePicture")
-      .sort({ createdAt: -1 }) // Newest first (for pagination)
-      .limit(limit + 1)
+      .sort({ createdAt: -1 }) // Newest first
+      .limit(limit)
       .exec();
 
     // Check if there are more messages
-    const hasMore = messages.length > limit;
+    const hasMore = messages.length > 0;
 
-    // Remove the extra message if exists
-    const items = hasMore ? messages.slice(0, limit) : messages;
-
-    // Reverse to show oldest first in the UI
-    const orderedMessages = items.reverse();
-
-    // Get cursors
-    const nextCursor = hasMore ? items[items.length - 1]._id.toString() : null;
+    // Set if there is still cursor to fetch more messages (for infinite scroll)
+    const nextCursor = hasMore ? messages[messages.length - 1].createdAt : null;
 
     const prevCursor = cursor || null;
 
     return {
-      messages: orderedMessages,
+      messages,
       hasMore,
       nextCursor,
       prevCursor,

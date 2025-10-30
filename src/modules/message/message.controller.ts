@@ -17,7 +17,7 @@ export class MessageController {
   async getMessages(
     @Param("matchId") matchId: string,
     @GetCurrentUser() user: UserDocument,
-    @Query("cursor") cursor?: string,
+    @Query("cursor") cursor?: Date,
     @Query("limit") limit: number = 20,
   ) {
     validateObjectId(matchId, "Match ID");
