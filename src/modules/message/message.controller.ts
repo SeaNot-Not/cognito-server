@@ -29,7 +29,9 @@ export class MessageController {
     }
 
     // Use .equals() for ObjectId comparison (more reliable)
-    const isParticipant = match.userA.equals(user._id) || match.userB.equals(user._id);
+    const isParticipant =
+      match.userA.toString() === user._id.toString() ||
+      match.userB.toString() === user._id.toString();
 
     if (!isParticipant) {
       throw new ForbiddenException("You are not authorized to access this chat.");

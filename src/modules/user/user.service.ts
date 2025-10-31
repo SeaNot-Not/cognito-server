@@ -52,6 +52,7 @@ export class UserService {
    * Discover users for swiping feature (exclude self, likes, skips)
    * Uses cursor-based pagination for infinite scroll/batch loading
    */
+
   async discover(currentUser: Partial<UserDocument>, cursor?: string, limit: number = 10) {
     const excludedIds = [
       currentUser._id,
@@ -79,7 +80,7 @@ export class UserService {
       .find(query)
       .sort({ age: 1 }) // Order by ID for now
       .limit(limit + 1)
-      .select("name age bio profilePicture")
+      .select("name age bio profileImage")
       .exec();
 
     // Check if there are more users
