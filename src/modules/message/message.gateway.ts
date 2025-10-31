@@ -83,6 +83,44 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
   }
 
+  @SubscribeMessage("leave_match_room")
+  async handleLeaveRoom(
+    @MessageBody() matchId: string,
+    @ConnectedSocket() socket: Socket,
+  ): Promise<SocketResponse> {
+    try {
+      if (!matchId) {
+        return {
+          success: false,
+          message: "matchId is required",
+          statusCode: 400,
+        };
+      }
+
+      await socket.leave(matchId);
+      this.logger.info({ socketId: socket.id, matchId }, `Socket left room`);
+
+      // Notify others in the room (optional)
+      socket.to(matchId).emit("user_left", {
+        socketId: socket.id,
+      });
+
+      return {
+        success: true,
+        message: "Left room successfully",
+        data: { matchId },
+        statusCode: 200,
+      };
+    } catch (error) {
+      this.logger.error({ error, socketId: socket.id }, `Error leaving room`);
+      return {
+        success: false,
+        message: "Failed to leave room",
+        statusCode: 500,
+      };
+    }
+  }
+
   @SubscribeMessage("send_message")
   async handleSendMessage(
     @MessageBody() data: { matchId: string; senderId: string; text: string },

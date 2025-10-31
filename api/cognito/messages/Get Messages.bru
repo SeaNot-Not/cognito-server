@@ -1,0 +1,19 @@
+meta {
+  name: Get Messages
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{url}}/:matchId?limit=20
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 20
+}
+
+params:path {
+  matchId: 
+}

@@ -19,13 +19,15 @@ export class MatchService {
 
   // Get all matches for a user
   async getUserMatches(userId: string) {
+    // Ensure we query using ObjectId to match stored ObjectId fields
+    const userObjectId = new Types.ObjectId(userId);
     return this.matchModel
       .find({
         unmatched: false,
-        $or: [{ userA: userId }, { userB: userId }],
+        $or: [{ userA: userObjectId }, { userB: userObjectId }],
         deletedAt: null,
       })
-      .populate("userA userB", "name age bio profilePicture")
+      .populate("userA userB", "name age bio profileImage")
       .exec();
   }
 
@@ -48,18 +50,20 @@ export class MatchService {
     );
 
     if (isMutualInLikes) {
+      // Cast ids to ObjectId when searching for existing matches
       const existingMatch = await this.matchModel.findOne({
         $or: [
-          { userA: currentUserId, userB: targetUserId },
-          { userA: targetUserId, userB: currentUserId },
+          { userA: new Types.ObjectId(currentUserId), userB: new Types.ObjectId(targetUserId) },
+          { userA: new Types.ObjectId(targetUserId), userB: new Types.ObjectId(currentUserId) },
         ],
       });
 
       // Create new match if no existing match
       if (!existingMatch) {
         const match = await this.matchModel.create({
-          userA: currentUserId,
-          userB: targetUserId,
+          // store as ObjectId explicitly to avoid string vs ObjectId mismatch
+          userA: new Types.ObjectId(currentUserId),
+          userB: new Types.ObjectId(targetUserId),
         });
 
         // (optional) emit socket event later

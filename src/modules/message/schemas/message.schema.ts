@@ -26,5 +26,3 @@ export class Message {
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
-
-MessageSchema.index({ matchId: 1, senderId: 1 }, { unique: true });

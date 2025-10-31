@@ -17,7 +17,7 @@ export class MessageController {
   async getMessages(
     @Param("matchId") matchId: string,
     @GetCurrentUser() user: UserDocument,
-    @Query("cursor") cursor?: Date,
+    @Query("cursor") cursor?: string,
     @Query("limit") limit: number = 20,
   ) {
     validateObjectId(matchId, "Match ID");
@@ -37,7 +37,9 @@ export class MessageController {
       throw new ForbiddenException("You are not authorized to access this chat.");
     }
 
-    const result = await this.messageService.getMessages(matchId, cursor, Number(limit));
+    const parsedCursor = cursor ? new Date(cursor) : undefined;
+
+    const result = await this.messageService.getMessages(matchId, parsedCursor, Number(limit));
 
     return ResponseHelper.cursorPaginated(
       result.messages,
