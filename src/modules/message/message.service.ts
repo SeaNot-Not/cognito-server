@@ -19,7 +19,7 @@ export class MessageService {
     });
 
     // Populate sender info before returning
-    return await message.populate("senderId", "name profilePicture");
+    return await message.populate("senderId", "name profileImage");
   }
 
   /**
@@ -39,7 +39,7 @@ export class MessageService {
 
     const messages = await this.messageModel
       .find(query)
-      .populate("senderId", "name profilePicture")
+      .populate("senderId", "name profileImage")
       .sort({ createdAt: -1 }) // Newest first
       .limit(limit)
       .exec();
